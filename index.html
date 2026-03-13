@@ -3,321 +3,315 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zaawansowany Bezpieczny Pamiętnik</title>
+    <title>Ultimate Safe Diary & Health Tracker</title>
     <style>
-        :root { --p-color: #2c3e50; --s-color: #3498db; --bg: #f4f7f6; --accent: #16a085; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--p-color); margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        h1 { text-align: center; margin-bottom: 30px; font-weight: 300; }
+        :root { --p-color: #2c3e50; --s-color: #3498db; --bg: #f0f2f5; --accent: #27ae60; --journal-color: #8e44ad; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--p-color); margin: 0; padding: 20px; line-height: 1.5; }
+        .container { max-width: 1300px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         
-        .toolbar { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; padding: 20px; background: #f9f9f9; border-radius: 8px; border: 1px solid #eee; }
-        .toolbar-group { flex: 1; min-width: 250px; }
+        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        .toolbar { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; padding: 20px; background: #f8fafc; border-radius: 12px; }
         
-        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #eee; }
-        .tab { padding: 12px 25px; cursor: pointer; border: none; background: none; font-size: 16px; transition: 0.2s; border-radius: 5px 5px 0 0; }
-        .tab.active { background: var(--s-color); color: white; }
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; background: #eee; padding: 5px; border-radius: 10px; }
+        .tab { flex: 1; padding: 12px; cursor: pointer; border: none; background: none; font-weight: 600; border-radius: 8px; transition: 0.3s; }
+        .tab.active { background: white; color: var(--s-color); box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
         
-        .content-section { display: none; overflow-x: auto; }
+        .content-section { display: none; }
         .content-section.active { display: block; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85em; }
-        th { background: #f2f2f2; position: sticky; top: 0; }
-        th, td { padding: 10px; border: 1px solid #eee; text-align: left; vertical-align: top; }
-        tr:nth-child(even) { background: #fafafa; }
-        
-        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; transition: 0.2s; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: #f8fafc; text-align: left; padding: 15px; border-bottom: 2px solid #eee; color: #64748b; }
+        td { padding: 15px; border-bottom: 1px solid #eee; vertical-align: top; }
+        tr:hover { background: #f1f5f9; }
+
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 8px; }
         .btn-primary { background: var(--s-color); color: white; }
         .btn-success { background: var(--accent); color: white; }
-        .btn-danger { background: #e74c3c; color: white; }
-        .btn-small { padding: 4px 8px; font-size: 11px; }
+        .btn-journal { background: var(--journal-color); color: white; }
+        .btn-danger { background: #ef4444; color: white; }
 
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
-        .modal-content { background: white; margin: 2% auto; padding: 25px; width: 90%; max-width: 800px; border-radius: 10px; max-height: 90vh; overflow-y: auto; }
+        .modal { display: none; position: fixed; z-index: 1000; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+        .modal-content { background: white; margin: 2vh auto; padding: 30px; width: 90%; max-width: 900px; border-radius: 15px; max-height: 90vh; overflow-y: auto; }
         
-        .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .form-group { display: flex; flex-direction: column; }
-        .form-group.full-width { grid-column: span 2; }
-        label { font-weight: bold; font-size: 12px; margin-bottom: 4px; color: #666; }
-        input, select, textarea { padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-        textarea { min-height: 80px; resize: vertical; }
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .full-w { grid-column: span 2; }
+        label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px; color: #475569; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; }
+        textarea { min-height: 120px; }
 
-        .badge { display: inline-block; padding: 2px 6px; border-radius: 10px; font-size: 10px; background: #eee; margin-right: 4px; }
-        .meta-info { font-size: 10px; color: #999; margin-top: 4px; }
+        .badge { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .mood-neutral { background: #e2e8f0; }
+        .mood-dobry { background: #dcfce7; color: #166534; }
+        .mood-smutny { background: #fee2e2; color: #991b1b; }
+        .tag { background: #ebf8ff; color: #2c5282; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-right: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📓 Organizer & Baza Medyczna</h1>
+    <div class="header">
+        <h1>🔐 System Zarządzania Życiem & Zdrowiem</h1>
+    </div>
 
     <div class="toolbar">
-        <div class="toolbar-group">
-            <label>1. Wczytaj plik (JSON/BIN):</label>
+        <div>
+            <label>Plik bazy (JSON/.BIN)</label>
             <input type="file" id="fileInput">
         </div>
-        <div class="toolbar-group">
-            <label>2. Klucz szyfrowania:</label>
-            <input type="password" id="masterPassword" placeholder="Wymagane do plików .bin">
+        <div>
+            <label>Hasło Szyfrowania</label>
+            <input type="password" id="masterPassword" placeholder="Twoje tajne hasło">
         </div>
-        <div class="toolbar-group" style="display: flex; align-items: flex-end; gap: 5px;">
-            <button class="btn btn-success" onclick="exportData(true)">Pobierz Szyfrowany (.bin)</button>
-            <button class="btn btn-primary" onclick="exportData(false)">Pobierz JSON</button>
+        <div style="display: flex; gap: 10px; align-items: flex-end;">
+            <button class="btn btn-success" onclick="exportData(true)">Pobierz Bezpieczny (.bin)</button>
+            <button class="btn btn-primary" onclick="exportData(false)">Eksport JSON</button>
         </div>
     </div>
 
     <div class="tabs">
-        <button class="tab active" onclick="showTab('events')">Zdarzenia i Kalendarz</button>
-        <button class="tab" onclick="showTab('entries')">Dziennik i Parametry Zdrowotne</button>
+        <button class="tab active" onclick="switchTab('events')">📅 Wydarzenia</button>
+        <button class="tab" onclick="switchTab('health')">🩺 Zdrowie i Rodzina</button>
+        <button class="tab" onclick="switchTab('journal')">📖 Pamiętnik</button>
     </div>
 
-    <div id="events" class="content-section active">
-        <div style="margin-bottom: 15px;">
-            <button class="btn btn-primary" onclick="openModal('event')">+ Dodaj nowe zdarzenie</button>
-        </div>
-        <div id="eventsTableContainer"></div>
+    <div id="events-sec" class="content-section active">
+        <button class="btn btn-primary" style="margin-bottom:15px" onclick="openModal('event')">+ Nowe Wydarzenie</button>
+        <div id="eventsTable"></div>
     </div>
 
-    <div id="entries" class="content-section">
-        <div style="margin-bottom: 15px;">
-            <button class="btn btn-primary" onclick="openModal('entry')">+ Dodaj nowy wpis medyczny</button>
-        </div>
-        <div id="entriesTableContainer"></div>
+    <div id="health-sec" class="content-section">
+        <button class="btn btn-success" style="margin-bottom:15px" onclick="openModal('health')">+ Nowy Wpis Medyczny</button>
+        <div id="healthTable"></div>
+    </div>
+
+    <div id="journal-sec" class="content-section">
+        <button class="btn btn-journal" style="margin-bottom:15px" onclick="openModal('journal')">+ Nowy Wpis w Pamiętniku</button>
+        <div id="journalTable"></div>
     </div>
 </div>
 
 <div id="modal" class="modal">
     <div class="modal-content">
-        <h2 id="modalTitle" style="margin-top:0">Edycja danych</h2>
-        <div id="modalFields" class="grid-form"></div>
-        <div style="margin-top: 25px; display: flex; gap: 10px; justify-content: flex-end;">
+        <h2 id="modalTitle" style="margin-top:0">Edytuj</h2>
+        <div id="modalFields" class="form-grid"></div>
+        <div style="margin-top: 30px; display: flex; gap: 10px; justify-content: flex-end;">
             <button class="btn btn-danger" onclick="closeModal()">Anuluj</button>
-            <button class="btn btn-success" onclick="saveData()">Zapisz zmiany</button>
+            <button class="btn btn-success" onclick="saveData()">Zapisz Zmiany</button>
         </div>
     </div>
 </div>
 
 <script>
-    // Pełny schemat na podstawie Twojego pliku JSON
+    // Schematy oparte o Twój pełny plik JSON
     const SCHEMAS = {
         event: [
             { key: 'title', label: 'Tytuł', type: 'text' },
-            { key: 'date', label: 'Data zdarzenia', type: 'datetime-local' },
+            { key: 'date', label: 'Data', type: 'datetime-local' },
             { key: 'category', label: 'Kategoria', type: 'text' },
             { key: 'priority', label: 'Priorytet', type: 'select', options: ['niska', 'średnia', 'wysoka'] },
-            { key: 'is_completed', label: 'Zakończone', type: 'checkbox' },
             { key: 'reminder_days', label: 'Przypomnienie (dni przed)', type: 'number' },
-            { key: 'is_recurring', label: 'Cykliczne', type: 'checkbox' },
-            { key: 'recurrence_type', label: 'Typ cyklu', type: 'text' },
-            { key: 'description', label: 'Opis', type: 'textarea', full: true },
-            { key: 'id', label: 'ID (systemowe)', type: 'text', readonly: true },
-            { key: 'created_by', label: 'Autor', type: 'text', readonly: true }
+            { key: 'description', label: 'Szczegóły', type: 'textarea', full: true }
         ],
-        entry: [
-            { key: 'date', label: 'Data i godzina pomiaru', type: 'datetime-local' },
-            { key: 'heart_rate', label: 'Tętno (bpm)', type: 'number' },
+        health: [
+            { key: 'family_member_id', label: 'ID Członka Rodziny (opcjonalnie)', type: 'text' },
+            { key: 'date', label: 'Data i Godzina', type: 'datetime-local' },
             { key: 'temperature', label: 'Temperatura (°C)', type: 'number', step: '0.1' },
-            { key: 'blood_pressure_systolic', label: 'Ciśnienie skurczowe', type: 'number' },
-            { key: 'blood_pressure_diastolic', label: 'Ciśnienie rozkurczowe', type: 'number' },
+            { key: 'heart_rate', label: 'Tętno', type: 'number' },
+            { key: 'blood_pressure_systolic', label: 'Skurczowe', type: 'number' },
+            { key: 'blood_pressure_diastolic', label: 'Rozkurczowe', type: 'number' },
             { key: 'weight', label: 'Waga (kg)', type: 'number', step: '0.1' },
-            { key: 'energy_level', label: 'Poziom energii (1-10)', type: 'number' },
+            { key: 'energy_level', label: 'Energia (1-10)', type: 'number' },
             { key: 'mental_state', label: 'Stan psychiczny', type: 'text' },
-            { key: 'physical_symptoms', label: 'Objawy fizyczne (oddziel przecinkiem)', type: 'tags' },
-            { key: 'notes', label: 'Szczegółowe notatki / Diagnozy', type: 'textarea', full: true },
-            { key: 'id', label: 'ID (systemowe)', type: 'text', readonly: true },
-            { key: 'created_date', label: 'Data utworzenia', type: 'text', readonly: true }
+            { key: 'physical_symptoms', label: 'Objawy fizyczne (po przecinku)', type: 'array' },
+            { key: 'notes', label: 'Notatki medyczne / Zalecenia', type: 'textarea', full: true }
+        ],
+        journal: [
+            { key: 'title', label: 'Tytuł wpisu', type: 'text' },
+            { key: 'date', label: 'Data', type: 'date' },
+            { key: 'mood', label: 'Nastrój', type: 'select', options: ['dobry', 'neutralny', 'smutny', 'niepokój'] },
+            { key: 'tags', label: 'Tagi (po przecinku)', type: 'array' },
+            { key: 'content', label: 'Treść przemyśleń', type: 'textarea', full: true }
         ]
     };
 
-    let database = { events: [], entries: [] };
-    let currentMode = ''; 
-    let currentId = null;
+    let db = { events: [], health: [], journal: [] };
+    let currentMode = '';
+    let currentEditId = null;
 
+    // --- OBSŁUGA PLIKÓW ---
     document.getElementById('fileInput').addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) return;
-
         const reader = new FileReader();
         reader.onload = async (ev) => {
             try {
                 if (file.name.endsWith('.bin')) {
                     const pass = document.getElementById('masterPassword').value;
-                    if (!pass) throw new Error("Wprowadź hasło, aby odszyfrować plik .bin");
+                    if (!pass) throw new Error("Hasło jest wymagane do pliku BIN!");
                     const decrypted = await decryptData(ev.target.result, pass);
-                    database = JSON.parse(decrypted);
+                    db = JSON.parse(decrypted);
                 } else {
-                    database = JSON.parse(ev.target.result);
+                    db = JSON.parse(ev.target.result);
                 }
-                renderTables();
-            } catch (err) {
-                alert("Błąd: " + err.message);
-            }
+                // Naprawa brakujących kluczy jeśli plik jest stary
+                if (!db.journal) db.journal = [];
+                if (!db.health) db.health = [];
+                renderAll();
+            } catch (err) { alert("Błąd wczytywania: " + err.message); }
         };
-
         if (file.name.endsWith('.bin')) reader.readAsArrayBuffer(file);
         else reader.readAsText(file);
     });
 
-    function renderTables() {
-        // Renderowanie Events
-        let evHtml = `<table><tr><th>Tytuł / Opis</th><th>Data</th><th>Kategoria</th><th>Status</th><th>Akcje</th></tr>`;
-        database.events.forEach(ev => {
-            evHtml += `<tr>
-                <td><strong>${ev.title || ''}</strong><br><small>${ev.description || ''}</small></td>
-                <td>${ev.date ? new Date(ev.date).toLocaleDateString() : '--'}</td>
-                <td><span class="badge">${ev.category || 'brak'}</span></td>
-                <td>${ev.is_completed ? '✅' : '⏳'} ${ev.priority || ''}</td>
-                <td>
-                    <button class="btn btn-primary btn-small" onclick="openModal('event', '${ev.id}')">Edytuj</button>
-                    <button class="btn btn-danger btn-small" onclick="deleteItem('events', '${ev.id}')">X</button>
-                </td>
-            </tr>`;
-        });
-        document.getElementById('eventsTableContainer').innerHTML = evHtml + `</table>`;
-
-        // Renderowanie Entries
-        let enHtml = `<table><tr><th>Data</th><th>Parametry Vitalne</th><th>Stan i Objawy</th><th>Notatki</th><th>Akcje</th></tr>`;
-        database.entries.forEach(en => {
-            const symptoms = Array.isArray(en.physical_symptoms) ? en.physical_symptoms.map(s => `<span class="badge">${s}</span>`).join('') : '';
-            enHtml += `<tr>
-                <td>${en.date ? new Date(en.date).toLocaleString() : '--'}</td>
-                <td>
-                    💓 ${en.heart_rate || '--'} | 🌡️ ${en.temperature || '--'}°C<br>
-                    🩸 ${en.blood_pressure_systolic || '--'}/${en.blood_pressure_diastolic || '--'}<br>
-                    ⚖️ ${en.weight || '--'}kg
-                </td>
-                <td>
-                    <strong>Stan:</strong> ${en.mental_state || '--'}<br>
-                    ${symptoms}
-                </td>
-                <td style="max-width:300px"><small>${en.notes || ''}</small></td>
-                <td>
-                    <button class="btn btn-primary btn-small" onclick="openModal('entry', '${en.id}')">Edytuj</button>
-                    <button class="btn btn-danger btn-small" onclick="deleteItem('entries', '${en.id}')">X</button>
-                </td>
-            </tr>`;
-        });
-        document.getElementById('entriesTableContainer').innerHTML = enHtml + `</table>`;
+    // --- RENDEROWANIE ---
+    function renderAll() {
+        renderEvents();
+        renderHealth();
+        renderJournal();
     }
 
-    function openModal(type, id = null) {
-        currentMode = type;
-        currentId = id;
-        const schema = SCHEMAS[type];
-        const item = id ? database[type === 'event' ? 'events' : 'entries'].find(x => x.id === id) : {};
+    function renderEvents() {
+        let h = `<table><tr><th>Data</th><th>Wydarzenie</th><th>Priorytet</th><th>Akcje</th></tr>`;
+        db.events.forEach(item => {
+            h += `<tr><td>${item.date?.split('T')[0]}</td><td><strong>${item.title}</strong><br><small>${item.category}</small></td>
+            <td><span class="badge">${item.priority}</span></td>
+            <td><button class="btn btn-primary" onclick="openModal('event','${item.id}')">✏️</button>
+            <button class="btn btn-danger" onclick="deleteItem('events','${item.id}')">🗑️</button></td></tr>`;
+        });
+        document.getElementById('eventsTable').innerHTML = h + `</table>`;
+    }
+
+    function renderHealth() {
+        let h = `<table><tr><th>Data / Osoba</th><th>Parametry</th><th>Objawy i Notatki</th><th>Akcje</th></tr>`;
+        db.health.forEach(item => {
+            const symptoms = (item.physical_symptoms || []).map(s => `<span class="tag">${s}</span>`).join('');
+            h += `<tr>
+                <td>${new Date(item.date).toLocaleString()}<br><small>ID: ${item.family_member_id || 'Ja'}</small></td>
+                <td>🌡️${item.temperature || '--'}° | 💓${item.heart_rate || '--'}<br>🩸${item.blood_pressure_systolic || '--'}/${item.blood_pressure_diastolic || '--'}</td>
+                <td><strong>${item.mental_state || ''}</strong> (En: ${item.energy_level}/10)<br>${symptoms}<br><small>${item.notes || ''}</small></td>
+                <td><button class="btn btn-success" onclick="openModal('health','${item.id}')">✏️</button>
+                <button class="btn btn-danger" onclick="deleteItem('health','${item.id}')">🗑️</button></td></tr>`;
+        });
+        document.getElementById('healthTable').innerHTML = h + `</table>`;
+    }
+
+    function renderJournal() {
+        let h = `<table><tr><th>Data</th><th>Wpis</th><th>Nastrój</th><th>Akcje</th></tr>`;
+        db.journal.forEach(item => {
+            const tags = (item.tags || []).map(t => `<span class="tag">#${t}</span>`).join('');
+            h += `<tr>
+                <td style="width:100px">${item.date}</td>
+                <td><strong>${item.title}</strong><br><small>${item.content?.substring(0, 150)}...</small><br>${tags}</td>
+                <td><span class="badge mood-${item.mood}">${item.mood}</span></td>
+                <td><button class="btn btn-journal" onclick="openModal('journal','${item.id}')">✏️</button>
+                <button class="btn btn-danger" onclick="deleteItem('journal','${item.id}')">🗑️</button></td></tr>`;
+        });
+        document.getElementById('journalTable').innerHTML = h + `</table>`;
+    }
+
+    // --- LOGIKA MODALA ---
+    function openModal(mode, id = null) {
+        currentMode = mode;
+        currentEditId = id;
+        const schema = SCHEMAS[mode];
+        const data = id ? db[mode === 'event' ? 'events' : mode].find(x => x.id === id) : {};
         
-        let html = '';
-        schema.forEach(field => {
-            let val = item[field.key] !== undefined ? item[field.key] : '';
-            if (field.type === 'datetime-local' && val) val = val.substring(0, 16);
-            if (field.type === 'tags' && Array.isArray(val)) val = val.join(', ');
-
-            const isFull = field.full ? 'full-width' : '';
-            const isReadonly = field.readonly ? 'readonly' : '';
-
-            html += `<div class="form-group ${isFull}">
-                <label>${field.label}</label>`;
+        let fieldsHtml = '';
+        schema.forEach(f => {
+            let val = data[f.key] || '';
+            if (f.type === 'array') val = (data[f.key] || []).join(', ');
             
-            if (field.type === 'textarea') {
-                html += `<textarea id="inp_${field.key}" ${isReadonly}>${val}</textarea>`;
-            } else if (field.type === 'select') {
-                html += `<select id="inp_${field.key}">` + field.options.map(o => `<option value="${o}" ${val === o ? 'selected' : ''}>${o}</option>`).join('') + `</select>`;
-            } else if (field.type === 'checkbox') {
-                html += `<input type="checkbox" id="inp_${field.key}" ${val ? 'checked' : ''} style="width:auto">`;
+            const fieldClass = f.full ? 'full-w' : '';
+            fieldsHtml += `<div class="${fieldClass}"><label>${f.label}</label>`;
+            if (f.type === 'textarea') {
+                fieldsHtml += `<textarea id="val_${f.key}">${val}</textarea>`;
+            } else if (f.type === 'select') {
+                fieldsHtml += `<select id="val_${f.key}">${f.options.map(o => `<option value="${o}" ${o===val?'selected':''}>${o}</option>`).join('')}</select>`;
             } else {
-                html += `<input type="${field.type === 'tags' ? 'text' : field.type}" id="inp_${field.key}" value="${val}" ${isReadonly} step="${field.step || '1'}">`;
+                fieldsHtml += `<input type="${f.type}" id="val_${f.key}" value="${val}" step="${f.step || 1}">`;
             }
-            html += `</div>`;
+            fieldsHtml += `</div>`;
         });
 
-        document.getElementById('modalFields').innerHTML = html;
-        document.getElementById('modalTitle').innerText = id ? "Edycja wpisu" : "Nowy wpis";
+        document.getElementById('modalFields').innerHTML = fieldsHtml;
+        document.getElementById('modalTitle').innerText = (id ? 'Edytuj ' : 'Dodaj ') + mode;
         document.getElementById('modal').style.display = 'block';
     }
 
     function saveData() {
-        const typeKey = currentMode === 'event' ? 'events' : 'entries';
+        const modeKey = currentMode === 'event' ? 'events' : currentMode;
         const schema = SCHEMAS[currentMode];
-        
-        let item = currentId 
-            ? database[typeKey].find(x => x.id === currentId) 
-            : { id: crypto.randomUUID().substring(0, 8), created_date: new Date().toISOString(), created_by: 'Użytkownik' };
+        let item = currentEditId ? db[modeKey].find(x => x.id === currentEditId) : { id: crypto.randomUUID().substring(0, 8), created_date: new Date().toISOString() };
 
-        schema.forEach(field => {
-            if (field.readonly) return;
-            const el = document.getElementById(`inp_${field.key}`);
-            if (field.type === 'checkbox') {
-                item[field.key] = el.checked;
-            } else if (field.type === 'number') {
-                item[field.key] = el.value === '' ? null : parseFloat(el.value);
-            } else if (field.type === 'tags') {
-                item[field.key] = el.value.split(',').map(s => s.trim()).filter(s => s !== '');
+        schema.forEach(f => {
+            const input = document.getElementById(`val_${f.key}`);
+            if (f.type === 'array') {
+                item[f.key] = input.value.split(',').map(s => s.trim()).filter(s => s !== '');
+            } else if (f.type === 'number') {
+                item[f.key] = input.value ? parseFloat(input.value) : null;
             } else {
-                item[field.key] = el.value;
+                item[f.key] = input.value;
             }
         });
 
-        item.updated_date = new Date().toISOString();
-        if (!currentId) database[typeKey].push(item);
-        
+        if (!currentEditId) db[modeKey].push(item);
         closeModal();
-        renderTables();
+        renderAll();
     }
 
-    function deleteItem(type, id) {
-        if (confirm("Czy na pewno chcesz trwale usunąć ten rekord?")) {
-            database[type] = database[type].filter(x => x.id !== id);
-            renderTables();
-        }
-    }
-
-    function showTab(tab) {
+    // --- FUNKCJE POMOCNICZE ---
+    function switchTab(t) {
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.getElementById(tab).classList.add('active');
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        document.getElementById(t + '-sec').classList.add('active');
         event.target.classList.add('active');
+    }
+
+    function deleteItem(key, id) {
+        if (confirm("Usunąć wpis?")) {
+            db[key] = db[key].filter(x => x.id !== id);
+            renderAll();
+        }
     }
 
     function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
-    // --- Szyfrowanie (AES-GCM) ---
-    async function deriveKey(password, salt) {
+    // --- SZYFROWANIE AES-GCM ---
+    async function deriveKey(pass, salt) {
         const enc = new TextEncoder();
-        const baseKey = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+        const base = await crypto.subtle.importKey("raw", enc.encode(pass), "PBKDF2", false, ["deriveKey"]);
         return crypto.subtle.deriveKey(
             { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
-            baseKey, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
+            base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]
         );
     }
 
     async function exportData(encrypt) {
-        const dataStr = JSON.stringify(database);
+        const dataStr = JSON.stringify(db);
         if (!encrypt) {
-            downloadBlob(new Blob([dataStr], {type: 'application/json'}), 'pamiętnik_eksport.json');
+            downloadBlob(new Blob([dataStr], {type:'application/json'}), 'baza.json');
             return;
         }
-
-        const password = document.getElementById('masterPassword').value;
-        if (!password) return alert("Podaj hasło do szyfrowania!");
-
+        const pass = document.getElementById('masterPassword').value;
+        if (!pass) return alert("Wpisz hasło!");
+        
         const salt = crypto.getRandomValues(new Uint8Array(16));
         const iv = crypto.getRandomValues(new Uint8Array(12));
-        const key = await deriveKey(password, salt);
-        const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(dataStr));
-
-        const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
-        combined.set(salt, 0);
-        combined.set(iv, salt.length);
-        combined.set(new Uint8Array(encrypted), salt.length + iv.length);
-        downloadBlob(new Blob([combined]), 'pamiętnik_bezpieczny.bin');
+        const key = await deriveKey(pass, salt);
+        const encrypted = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(dataStr));
+        
+        const res = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+        res.set(salt, 0); res.set(iv, 16); res.set(new Uint8Array(encrypted), 28);
+        downloadBlob(new Blob([res]), 'baza_zaszyfrowana.bin');
     }
 
-    async function decryptData(buffer, password) {
-        const salt = buffer.slice(0, 16);
-        const iv = buffer.slice(16, 28);
+    async function decryptData(buffer, pass) {
+        const salt = new Uint8Array(buffer.slice(0, 16));
+        const iv = new Uint8Array(buffer.slice(16, 28));
         const data = buffer.slice(28);
-        const key = await deriveKey(password, new Uint8Array(salt));
-        const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: new Uint8Array(iv) }, key, data);
-        return new TextDecoder().decode(decrypted);
+        const key = await deriveKey(pass, salt);
+        const dec = await crypto.subtle.decrypt({name:"AES-GCM", iv}, key, data);
+        return new TextDecoder().decode(dec);
     }
 
     function downloadBlob(blob, name) {
@@ -327,6 +321,5 @@
         a.click();
     }
 </script>
-
 </body>
 </html>
