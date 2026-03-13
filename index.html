@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pamiętnik – Twój Osobisty Asystent Życia</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #f8f9fa;
+            --text-color: #333;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0 0 1rem 0;
+            font-size: 2.5rem;
+        }
+
+        header h2 {
+            margin: 0;
+            font-weight: 300;
+            font-size: 1.2rem;
+            color: #bdc3c7;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .intro {
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h2.section-title {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--secondary-color);
+            padding-bottom: 0.5rem;
+            margin-top: 3rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            border-top: 4px solid var(--secondary-color);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+        }
+
+        .card ul {
+            padding-left: 1.2rem;
+            margin-bottom: 0;
+        }
+
+        .card li {
+            margin-bottom: 0.8rem;
+        }
+
+        .card li strong {
+            color: var(--secondary-color);
+        }
+
+        .value-proposition {
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-top: 3rem;
+            border-left: 5px solid var(--accent-color);
+        }
+
+        .value-proposition h3 {
+            color: var(--primary-color);
+        }
+
+        .value-proposition ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .value-proposition li {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .value-proposition li::before {
+            content: "✓";
+            color: var(--accent-color);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 3rem 2rem;
+            background-color: var(--primary-color);
+            color: white;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 2rem 1rem;
+            }
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Pamiętnik – Twój Osobisty Asystent Życia</h1>
+        <h2>Kompleksowe Narzędzie do Organizacji i Monitorowania Życia Prywatnego i Rodzinnego</h2>
+    </header>
+
+    <div class="container">
+        <section class="intro">
+            <p><strong>Pamiętnik</strong> to innowacyjna platforma webowa, zaprojektowana, aby kompleksowo wspierać użytkowników w zarządzaniu ich codziennym życiem, od osobistych notatek, poprzez zdrowie i aktywność fizyczną, aż po monitorowanie dobrostanu całej rodziny. Jest to nowoczesne rozwiązanie, które łączy funkcjonalność osobistego asystenta z możliwościami śledzenia danych zdrowotnych, oferując intuicyjny interfejs i potężne narzędzia do analizy.</p>
+        </section>
+
+        <h2 class="section-title">Kluczowe Moduły i Funkcjonalności</h2>
+        
+        <div class="grid-container">
+            <div class="card">
+                <h3>Kalendarz Wydarzeń</h3>
+                <ul>
+                    <li><strong>Intuicyjne Zarządzanie Wydarzeniami:</strong> Łatwe dodawanie, edytowanie i usuwanie wydarzeń z tytułem, opisem, datą, godziną, kategorią i priorytetem.</li>
+                    <li><strong>Kategorie i Priorytety:</strong> Personalizowane kategorie (np. urodziny, rocznice, spotkania, zadania, lekarz) oraz poziomy priorytetów (niska, średnia, wysoka) dla lepszej organizacji.</li>
+                    <li><strong>Przypomnienia:</strong> Ustawianie przypomnień na określoną liczbę dni przed wydarzeniem.</li>
+                    <li><strong>Wydarzenia Cykliczne:</strong> Obsługa wydarzeń powtarzalnych (codziennie, tygodniowo, miesięcznie, rocznie), z inteligentnym zarządzaniem urodzinami i rocznicami, które automatycznie obliczają wiek lub lata od wydarzenia.</li>
+                    <li><strong>Import Świąt:</strong> Możliwość automatycznego zaimportowania wszystkich polskich świąt państwowych i religijnych dla wybranego zakresu lat, z uwzględnieniem świąt ruchomych.</li>
+                    <li><strong>Integracja z Google Calendar (obejście):</strong> Dla każdego wydarzenia dostępny jest przycisk "Dodaj do Google Calendar", który pozwala na szybkie przeniesienie szczegółów wydarzenia do osobistego kalendarza Google użytkownika.</li>
+                    <li><strong>Eksport/Import ICS:</strong> Możliwość eksportowania wszystkich wydarzeń do pliku w formacie ICS, co umożliwia łatwy import do innych aplikacji kalendarzowych (np. Outlook, Apple Calendar) oraz import wydarzeń z plików ICS.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Dziennik Osobisty</h3>
+                <ul>
+                    <li><strong>Prowadzenie Notatek:</strong> Tworzenie wpisów z datą, tytułem, treścią, tagami i nastrojem dnia.</li>
+                    <li><strong>Monitorowanie Nastroju:</strong> Śledzenie samopoczucia za pomocą predefiniowanych kategorii nastroju (świetny, dobry, neutralny, smutny, zły).</li>
+                    <li><strong>Wizualne Wzbogacanie:</strong> Możliwość dodawania zdjęć do wpisów, co pozwala na tworzenie bogatszych, wizualnych wspomnień.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Monitorowanie Zdrowia (Personalne i Rodzinne)</h3>
+                <ul>
+                    <li><strong>Kompleksowy Tracking Danych:</strong> Rejestrowanie kluczowych parametrów zdrowotnych, takich jak tętno, temperatura, ciśnienie krwi (skurczowe i rozkurczowe), waga, wzrost, objawy fizyczne, stan psychiczny, poziom energii (1-10) oraz dodatkowe notatki.</li>
+                    <li><strong>Wizualizacja Danych:</strong> Wykresy i statystyki prezentujące historyczne dane zdrowotne, umożliwiające łatwe śledzenie trendów.</li>
+                    <li><strong>Historia Pomiarów:</strong> Szczegółowa lista wszystkich pomiarów z możliwością edycji i usuwania.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Zarządzanie Członkami Rodziny</h3>
+                <ul>
+                    <li><strong>Profile Rodzinne:</strong> Tworzenie i zarządzanie profilami członków rodziny (imię, relacja – syn, córka, partner/partnerka, rodzic, inne, data urodzenia, notatki).</li>
+                    <li><strong>Indywidualne Pomiary dla Rodziny:</strong> Możliwość przypisywania pomiarów zdrowotnych do konkretnego członka rodziny lub do głównego użytkownika.</li>
+                    <li><strong>Przegląd Zdrowia Rodziny:</strong> Dedykowana zakładka „Rodzina” umożliwiająca przegląd wszystkich członków rodziny i ich indywidualnych pomiarów zdrowotnych w jednym miejscu, z opcją dodawania i edytowania wpisów dla każdego.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Śledzenie Aktywności Fizycznej (Treningi)</h3>
+                <ul>
+                    <li><strong>Plany Treningowe:</strong> Tworzenie i zarządzanie spersonalizowanymi planami treningowymi zawierającymi ćwiczenia, serie, powtórzenia, ciężar, czas trwania i notatki.</li>
+                    <li><strong>Sesje Treningowe:</strong> Rejestrowanie odbytych sesji treningowych z datą, czasem trwania, wykonanymi ćwiczeniami (z liczbą serii/powtórzeń/ciężarem), notatkami, samopoczuciem i szacunkową liczbą spalonych kalorii.</li>
+                    <li><strong>Historia Treningów:</strong> Dostęp do szczegółowej historii wszystkich sesji treningowych.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Monitorowanie Snu</h3>
+                <ul>
+                    <li><strong>Rejestracja Parametrów Snu:</strong> Wprowadzanie danych dotyczących snu: data, godzina pójścia spać, godzina pobudki, całkowity czas snu, jakość snu (doskonała, dobra, średnia, słaba, bardzo słaba).</li>
+                    <li><strong>Higiena Snu:</strong> Oznaczanie elementów higieny snu (brak ekranów przed snem, ciemny pokój, regularny harmonogram, brak kofeiny, komfortowa temperatura, relaksacja).</li>
+                    <li><strong>Analiza Danych Snu:</strong> Wykresy i statystyki dotyczące jakości i czasu snu, pomagające identyfikować wzorce i poprawiać nawyki.</li>
+                    <li><strong>Historia Snu:</strong> Przegląd wszystkich zarejestrowanych wpisów dotyczących snu.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h3>Eksport Danych do PDF</h3>
+                <ul>
+                    <li><strong>Kompleksowy Raport:</strong> Dedykowana funkcja eksportu, która generuje szczegółowy raport PDF zawierający wszystkie dane z modułów Kalendarza, Dziennika, Zdrowia, Snu i Treningów.</li>
+                    <li><strong>Czytelny Format:</strong> Raport jest formatowany w przejrzysty sposób, z podsumowaniem i chronologicznym przedstawieniem danych, idealny do archiwizacji lub dzielenia się informacjami (np. z lekarzem).</li>
+                </ul>
+            </div>
+        </div>
+
+        <section class="value-proposition">
+            <h3>Wartość Dodana Aplikacji</h3>
+            <ul>
+                <li><strong>Centralizacja Informacji:</strong> Wszystkie ważne aspekty życia i zdrowia w jednym miejscu, łatwo dostępne i uporządkowane.</li>
+                <li><strong>Wsparcie Rodziny:</strong> Unikalna funkcja monitorowania zdrowia dla członków rodziny, co czyni aplikację niezastąpionym narzędziem dla rodziców i opiekunów.</li>
+                <li><strong>Głęboka Analiza:</strong> Możliwość śledzenia trendów i wzorców dzięki wizualizacji danych, co pomaga w podejmowaniu świadomych decyzji dotyczących zdrowia i stylu życia.</li>
+                <li><strong>Personalizacja:</strong> Dostosowanie kategorii wydarzeń i innych ustawień do indywidualnych potrzeb użytkownika.</li>
+                <li><strong>Intuicyjny Interfejs:</strong> Nowoczesny i czysty design, zapewniający łatwość obsługi i przyjemne doświadczenie użytkownika.</li>
+                <li><strong>Prywatność Danych:</strong> Wszystkie dane są bezpiecznie przechowywane i dostępne tylko dla użytkownika, z zachowaniem najwyższych standardów prywatności.</li>
+            </ul>
+        </section>
+    </div>
+
+    <footer>
+        <p><strong>Pamiętnik – Twój Osobisty Asystent Życia</strong> to nie tylko organizer, ale partner w budowaniu świadomego i zdrowego stylu życia dla Ciebie i Twojej rodziny.</p>
+    </footer>
+
+</body>
+</html>
