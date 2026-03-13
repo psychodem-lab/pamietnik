@@ -3,95 +3,264 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mój Zaszyfrowany Pamiętnik</title>
+    <title>Bezpieczny Pamiętnik & Organizer</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
-        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
-        h1 { font-size: 1.5rem; color: #333; }
-        textarea { width: 100%; height: 300px; margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; box-sizing: border-box; }
-        input[type="password"] { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        .buttons { display: flex; gap: 10px; }
-        button { flex: 1; padding: 10px; cursor: pointer; border: none; border-radius: 4px; transition: 0.3s; }
-        .btn-save { background: #28a745; color: white; }
-        .btn-load { background: #007bff; color: white; }
-        button:hover { opacity: 0.8; }
-        #status { margin-top: 10px; font-size: 0.9rem; color: #666; }
+        :root { --p-color: #2c3e50; --s-color: #3498db; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: var(--p-color); margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: var(--p-color); }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; padding: 15px; background: #eef2f3; border-radius: 8px; }
+        .tabs { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
+        .tab { padding: 10px 20px; cursor: pointer; border: none; background: none; font-weight: bold; }
+        .tab.active { border-bottom: 3px solid var(--s-color); color: var(--s-color); }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9em; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background: #f8f9fa; }
+        tr:hover { background: #f1f1f1; }
+        .btn { padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .btn-primary { background: var(--s-color); color: white; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-success { background: #27ae60; color: white; }
+        .form-group { margin-bottom: 10px; }
+        input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 20px; width: 80%; max-width: 600px; border-radius: 10px; max-height: 80vh; overflow-y: auto; }
+        .encryption-status { font-size: 0.8em; color: #7f8c8d; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🔒 Mój Pamiętnik</h1>
-    <input type="password" id="password" placeholder="Wprowadź hasło...">
-    <textarea id="diaryText" placeholder="Zacznij pisać tutaj..."></textarea>
-    
-    <div class="buttons">
-        <button class="btn-save" onclick="saveDiary()">Zaszyfruj i Zapisz</button>
-        <button class="btn-load" onclick="loadDiary()">Odszyfruj i Wczytaj</button>
+    <h1>📓 Mój Bezpieczny Pamiętnik</h1>
+
+    <div class="toolbar">
+        <div>
+            <label>Wczytaj plik (JSON lub zaszyfrowany):</label><br>
+            <input type="file" id="fileInput" accept=".json,.bin">
+        </div>
+        <div>
+            <label>Hasło (szyfrowanie/deszyfrowanie):</label><br>
+            <input type="password" id="masterPassword" placeholder="Twoje tajne hasło">
+        </div>
+        <div style="align-self: flex-end;">
+            <button class="btn btn-success" onclick="exportData()">Zaszyfruj i Pobierz</button>
+            <button class="btn btn-primary" onclick="exportData(false)">Pobierz czysty JSON</button>
+        </div>
     </div>
-    <div id="status"></div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('events')">Zdarzenia (Events)</button>
+        <button class="tab" onclick="showTab('entries')">Dziennik i Zdrowie (Entries)</button>
+    </div>
+
+    <div id="events" class="content-section active">
+        <button class="btn btn-primary" onclick="openModal('event')">+ Dodaj Zdarzenie</button>
+        <div id="eventsList"></div>
+    </div>
+
+    <div id="entries" class="content-section">
+        <button class="btn btn-primary" onclick="openModal('entry')">+ Dodaj Pomiary/Notatkę</button>
+        <div id="entriesList"></div>
+    </div>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Edytuj</h2>
+        <div id="modalFields"></div>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="btn btn-success" onclick="saveFromModal()">Zapisz</button>
+            <button class="btn btn-danger" onclick="closeModal()">Anuluj</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    // Konfiguracja algorytmu
-    const ALGO = "AES-GCM";
+    let db = { events: [], entries: [] };
+    let currentEditType = '';
+    let currentEditId = null;
 
-    async function deriveKey(password, salt) {
+    // Struktura pól na podstawie JSON
+    const eventFields = ['title', 'description', 'date', 'category', 'priority', 'is_completed', 'reminder_days'];
+    const entryFields = ['date', 'heart_rate', 'temperature', 'blood_pressure_systolic', 'blood_pressure_diastolic', 'weight', 'physical_symptoms', 'mental_state', 'notes', 'energy_level'];
+
+    document.getElementById('fileInput').addEventListener('change', handleFile);
+
+    async function handleFile(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            try {
+                if (file.name.endsWith('.json')) {
+                    db = JSON.parse(event.target.result);
+                } else {
+                    const password = document.getElementById('masterPassword').value;
+                    if (!password) return alert("Podaj hasło do deszyfrowania!");
+                    const decrypted = await decryptData(event.target.result, password);
+                    db = JSON.parse(decrypted);
+                }
+                renderAll();
+            } catch (err) {
+                alert("Błąd wczytywania: " + err.message);
+            }
+        };
+        
+        if (file.name.endsWith('.json')) reader.readAsText(file);
+        else reader.readAsArrayBuffer(file);
+    }
+
+    function renderAll() {
+        renderEvents();
+        renderEntries();
+    }
+
+    function renderEvents() {
+        let html = `<table><tr><th>Data</th><th>Tytuł</th><th>Kategoria</th><th>Priorytet</th><th>Akcje</th></tr>`;
+        (db.events || []).forEach(ev => {
+            html += `<tr>
+                <td>${new Date(ev.date).toLocaleDateString()}</td>
+                <td><strong>${ev.title}</strong><br><small>${ev.description}</small></td>
+                <td>${ev.category}</td>
+                <td>${ev.priority}</td>
+                <td>
+                    <button class="btn btn-primary" onclick="openModal('event', '${ev.id}')">Edytuj</button>
+                    <button class="btn btn-danger" onclick="deleteItem('events', '${ev.id}')">X</button>
+                </td>
+            </tr>`;
+        });
+        document.getElementById('eventsList').innerHTML = html + `</table>`;
+    }
+
+    function renderEntries() {
+        let html = `<table><tr><th>Data</th><th>Tętno/Temp</th><th>Ciśnienie</th><th>Waga</th><th>Notatki</th><th>Akcje</th></tr>`;
+        (db.entries || []).forEach(en => {
+            html += `<tr>
+                <td>${new Date(en.date).toLocaleString()}</td>
+                <td>💓 ${en.heart_rate || '--'} / 🌡️ ${en.temperature || '--'}°C</td>
+                <td>${en.blood_pressure_systolic}/${en.blood_pressure_diastolic}</td>
+                <td>⚖️ ${en.weight || '--'} kg</td>
+                <td><small>${en.notes || ''}</small><br><strong>Stan:</strong> ${en.mental_state || '--'}</td>
+                <td>
+                    <button class="btn btn-primary" onclick="openModal('entry', '${en.id}')">Edytuj</button>
+                    <button class="btn btn-danger" onclick="deleteItem('entries', '${en.id}')">X</button>
+                </td>
+            </tr>`;
+        });
+        document.getElementById('entriesList').innerHTML = html + `</table>`;
+    }
+
+    function showTab(tabId) {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function openModal(type, id = null) {
+        currentEditType = type;
+        currentEditId = id;
+        const fields = type === 'event' ? eventFields : entryFields;
+        const data = id ? (db[type === 'event' ? 'events' : 'entries'].find(x => x.id === id)) : {};
+        
+        document.getElementById('modalTitle').innerText = (id ? 'Edytuj ' : 'Dodaj ') + (type === 'event' ? 'zdarzenie' : 'notatkę');
+        
+        let html = '';
+        fields.forEach(f => {
+            let val = data[f] || '';
+            let fieldType = f.includes('date') ? 'datetime-local' : (typeof val === 'number' ? 'number' : 'text');
+            if (f === 'notes' || f === 'description') {
+                html += `<div class="form-group"><label>${f}</label><textarea id="f_${f}">${val}</textarea></div>`;
+            } else {
+                html += `<div class="form-group"><label>${f}</label><input type="${fieldType}" id="f_${f}" value="${val}"></div>`;
+            }
+        });
+        
+        document.getElementById('modalFields').innerHTML = html;
+        document.getElementById('modal').style.display = 'block';
+    }
+
+    function saveFromModal() {
+        const type = currentEditType === 'event' ? 'events' : 'entries';
+        const fields = currentEditType === 'event' ? eventFields : entryFields;
+        let item = currentEditId ? db[type].find(x => x.id === currentEditId) : { id: btoa(Math.random()).substring(0, 12), created_date: new Date().toISOString() };
+        
+        fields.forEach(f => {
+            const val = document.getElementById(`f_${f}`).value;
+            item[f] = isNaN(val) || val === '' ? val : parseFloat(val);
+        });
+
+        item.updated_date = new Date().toISOString();
+        if (!currentEditId) db[type].push(item);
+        
+        closeModal();
+        renderAll();
+    }
+
+    function deleteItem(type, id) {
+        if(confirm('Czy na pewno usunąć?')) {
+            db[type] = db[type].filter(x => x.id !== id);
+            renderAll();
+        }
+    }
+
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+    // SZYFROWANIE
+    async function getEncryptionKey(password, salt) {
         const enc = new TextEncoder();
         const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
         return crypto.subtle.deriveKey(
             { name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" },
             keyMaterial,
-            { name: ALGO, length: 256 },
+            { name: "AES-GCM", length: 256 },
             false,
             ["encrypt", "decrypt"]
         );
     }
 
-    async function saveDiary() {
-        const password = document.getElementById('password').value;
-        const text = document.getElementById('diaryText').value;
-        if (!password) return alert("Podaj hasło!");
+    async function exportData(encrypt = true) {
+        const json = JSON.stringify(db);
+        if (!encrypt) {
+            download(json, 'pamiętnik_backup.json', 'application/json');
+            return;
+        }
+
+        const password = document.getElementById('masterPassword').value;
+        if (!password) return alert("Podaj hasło do zaszyfrowania!");
 
         const salt = crypto.getRandomValues(new Uint8Array(16));
         const iv = crypto.getRandomValues(new Uint8Array(12));
-        const key = await deriveKey(password, salt);
-        
-        const encodedText = new TextEncoder().encode(text);
-        const encrypted = await crypto.subtle.encrypt({ name: ALGO, iv: iv }, key, encodedText);
+        const key = await getEncryptionKey(password, salt);
+        const encoded = new TextEncoder().encode(json);
+        const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, encoded);
 
-        // Składanie wszystkiego w jeden ciąg (Salt + IV + Dane)
-        const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
-        combined.set(salt);
-        combined.set(iv, salt.length);
-        combined.set(new Uint8Array(encrypted), salt.length + iv.length);
-
-        const base64 = btoa(String.fromCharCode(...combined));
-        localStorage.setItem('encrypted_diary', base64);
+        const result = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+        result.set(salt, 0);
+        result.set(iv, salt.length);
+        result.set(new Uint8Array(encrypted), salt.length + iv.length);
         
-        document.getElementById('diaryText').value = "";
-        document.getElementById('status').innerText = "Zapisano pomyślnie i wyczyszczono pole tekstowe.";
+        download(result, 'pamiętnik_secure.bin', 'application/octet-stream');
     }
 
-    async function loadDiary() {
-        const password = document.getElementById('password').value;
-        const base64 = localStorage.getItem('encrypted_diary');
-        if (!password || !base64) return alert("Brak hasła lub zapisanych danych!");
+    async function decryptData(buffer, password) {
+        const salt = new Uint8Array(buffer.slice(0, 16));
+        const iv = new Uint8Array(buffer.slice(16, 28));
+        const data = buffer.slice(28);
+        const key = await getEncryptionKey(password, salt);
+        const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, data);
+        return new TextDecoder().decode(decrypted);
+    }
 
-        try {
-            const combined = new Uint8Array(atob(base64).split("").map(c => c.charCodeAt(0)));
-            const salt = combined.slice(0, 16);
-            const iv = combined.slice(16, 28);
-            const data = combined.slice(28);
-
-            const key = await deriveKey(password, salt);
-            const decrypted = await crypto.subtle.decrypt({ name: ALGO, iv: iv }, key, data);
-
-            document.getElementById('diaryText').value = new TextDecoder().decode(decrypted);
-            document.getElementById('status').innerText = "Odszyfrowano pomyślnie.";
-        } catch (e) {
-            alert("Błędne hasło lub uszkodzone dane!");
-        }
+    function download(data, filename, type) {
+        const blob = new Blob([data], { type: type });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
     }
 </script>
 
