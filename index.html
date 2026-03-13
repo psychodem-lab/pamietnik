@@ -3,277 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pamiętnik - Twój Osobisty Asystent Życia</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Mój Zaszyfrowany Pamiętnik</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        /* Klasa do ukrywania elementów */
-        .hidden { display: none !important; }
+        body { font-family: sans-serif; background: #f4f4f9; display: flex; justify-content: center; padding: 20px; }
+        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        h1 { font-size: 1.5rem; color: #333; }
+        textarea { width: 100%; height: 300px; margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; resize: vertical; box-sizing: border-box; }
+        input[type="password"] { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        .buttons { display: flex; gap: 10px; }
+        button { flex: 1; padding: 10px; cursor: pointer; border: none; border-radius: 4px; transition: 0.3s; }
+        .btn-save { background: #28a745; color: white; }
+        .btn-load { background: #007bff; color: white; }
+        button:hover { opacity: 0.8; }
+        #status { margin-top: 10px; font-size: 0.9rem; color: #666; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 flex h-screen overflow-hidden relative">
+<body>
 
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col hidden md:flex">
-        <div class="h-16 flex items-center px-6 border-b border-gray-200">
-            <i class="fa-solid fa-book-heart text-indigo-600 text-2xl mr-3"></i>
-            <span class="text-xl font-bold text-gray-900">Pamiętnik</span>
-        </div>
-        <nav class="flex-1 overflow-y-auto py-4">
-            <ul class="space-y-1 px-3">
-                <li><a href="#" class="flex items-center px-3 py-2.5 bg-indigo-50 text-indigo-600 rounded-lg font-medium"><i class="fa-solid fa-house w-6 text-center mr-2"></i> Pulpit</a></li>
-                <li><a href="#" class="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"><i class="fa-regular fa-calendar text-gray-400 w-6 text-center mr-2"></i> Kalendarz</a></li>
-                <li><a href="#" class="flex items-center px-3 py-2.5 text-gray-700 hover:bg-gray-100 rounded-lg font-medium transition-colors"><i class="fa-solid fa-heart-pulse text-gray-400 w-6 text-center mr-2"></i> Zdrowie</a></li>
-            </ul>
-        </nav>
-        <div class="p-4 border-t border-gray-200 text-xs text-gray-400 text-center">
-            Wersja Prototypowa (Tylko UI)
-        </div>
-    </aside>
-
-    <main class="flex-1 flex flex-col h-screen overflow-hidden">
-        
-        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6">
-            <h1 class="text-2xl font-semibold text-gray-900" id="greeting">Dzień dobry! 👋</h1>
-            <div class="flex items-center">
-                <div class="h-8 w-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">U</div>
-            </div>
-        </header>
-
-        <div class="flex-1 overflow-y-auto p-6">
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm cursor-pointer hover:shadow-md transition" onclick="changeMood()">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Kliknij, by zmienić nastrój</p>
-                            <h3 class="text-2xl font-bold text-gray-900 mt-1" id="mood-text">Świetny 😊</h3>
-                        </div>
-                        <div class="p-2 bg-green-100 rounded-lg" id="mood-icon-bg">
-                            <i class="fa-solid fa-face-smile text-green-600" id="mood-icon"></i>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-500">Dzisiejsza data</p>
-                    <h3 class="text-2xl font-bold text-gray-900 mt-1" id="current-date">--</h3>
-                </div>
-                <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-                    <p class="text-sm font-medium text-gray-500">Zaplanowane wydarzenia</p>
-                    <h3 class="text-2xl font-bold text-indigo-600 mt-1" id="event-count">0</h3>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                <div class="lg:col-span-2 bg-white rounded-xl border border-gray-200 shadow-sm">
-                    <div class="px-6 py-5 border-b border-gray-200 flex justify-between items-center">
-                        <h2 class="text-lg font-semibold text-gray-900">Nadchodzące wydarzenia</h2>
-                        <button onclick="openModal('eventModal')" class="text-sm bg-indigo-50 text-indigo-600 px-3 py-1 rounded hover:bg-indigo-100 font-medium">+ Dodaj</button>
-                    </div>
-                    <ul class="divide-y divide-gray-200" id="events-list">
-                        </ul>
-                </div>
-
-                <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
-                    <div class="px-6 py-5 border-b border-gray-200">
-                        <h2 class="text-lg font-semibold text-gray-900">Zdrowie Rodziny</h2>
-                    </div>
-                    <div class="p-6 space-y-4" id="family-list">
-                        </div>
-                </div>
-
-            </div>
-        </div>
-    </main>
-
-    <div id="eventModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
-        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Dodaj nowe wydarzenie</h3>
-                <form id="addEventForm" onsubmit="handleEventSubmit(event)">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Tytuł wydarzenia</label>
-                        <input type="text" id="eventTitle" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Data</label>
-                        <input type="date" id="eventDate" required class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700">Kategoria</label>
-                        <select id="eventCategory" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2">
-                            <option value="Rodzina">Rodzina</option>
-                            <option value="Zdrowie">Zdrowie</option>
-                            <option value="Praca">Praca</option>
-                            <option value="Inne">Inne</option>
-                        </select>
-                    </div>
-                    <div class="flex justify-end mt-6">
-                        <button type="button" onclick="closeModal('eventModal')" class="mr-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Anuluj</button>
-                        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">Zapisz</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="container">
+    <h1>🔒 Mój Pamiętnik</h1>
+    <input type="password" id="password" placeholder="Wprowadź hasło...">
+    <textarea id="diaryText" placeholder="Zacznij pisać tutaj..."></textarea>
+    
+    <div class="buttons">
+        <button class="btn-save" onclick="saveDiary()">Zaszyfruj i Zapisz</button>
+        <button class="btn-load" onclick="loadDiary()">Odszyfruj i Wczytaj</button>
     </div>
+    <div id="status"></div>
+</div>
 
-    <script>
-        // 1. STAN APLIKACJI (Mockowana Baza Danych)
-        let appState = {
-            moods: [
-                { text: 'Świetny 😊', icon: 'fa-face-smile', color: 'green' },
-                { text: 'Neutralny 😐', icon: 'fa-face-meh', color: 'gray' },
-                { text: 'Słaby 😔', icon: 'fa-face-frown', color: 'red' }
-            ],
-            currentMoodIndex: 0,
-            events: [
-                { id: 1, title: 'Wizyta u kardiologa', date: '2026-03-18', category: 'Zdrowie' },
-                { id: 2, title: 'Urodziny Anny', date: '2026-03-20', category: 'Rodzina' }
-            ],
-            family: [
-                { id: 1, name: 'Tomasz (Partner)', status: 'Pomiary w normie', color: 'green', initial: 'T' },
-                { id: 2, name: 'Anna (Córka)', status: 'Gorączka (38.2°C)', color: 'red', initial: 'A' }
-            ]
-        };
+<script>
+    // Konfiguracja algorytmu
+    const ALGO = "AES-GCM";
 
-        // 2. FUNKCJE INICJALIZACYJNE
-        window.onload = function() {
-            setDates();
-            renderEvents();
-            renderFamily();
-        };
+    async function deriveKey(password, salt) {
+        const enc = new TextEncoder();
+        const keyMaterial = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+        return crypto.subtle.deriveKey(
+            { name: "PBKDF2", salt: salt, iterations: 100000, hash: "SHA-256" },
+            keyMaterial,
+            { name: ALGO, length: 256 },
+            false,
+            ["encrypt", "decrypt"]
+        );
+    }
 
-        function setDates() {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const today = new Date().toLocaleDateString('pl-PL', options);
-            document.getElementById('current-date').innerText = today;
-            
-            // Ustawienie domyślnej daty w formularzu na dzisiaj
-            document.getElementById('eventDate').valueAsDate = new Date();
+    async function saveDiary() {
+        const password = document.getElementById('password').value;
+        const text = document.getElementById('diaryText').value;
+        if (!password) return alert("Podaj hasło!");
+
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const key = await deriveKey(password, salt);
+        
+        const encodedText = new TextEncoder().encode(text);
+        const encrypted = await crypto.subtle.encrypt({ name: ALGO, iv: iv }, key, encodedText);
+
+        // Składanie wszystkiego w jeden ciąg (Salt + IV + Dane)
+        const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+        combined.set(salt);
+        combined.set(iv, salt.length);
+        combined.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+        const base64 = btoa(String.fromCharCode(...combined));
+        localStorage.setItem('encrypted_diary', base64);
+        
+        document.getElementById('diaryText').value = "";
+        document.getElementById('status').innerText = "Zapisano pomyślnie i wyczyszczono pole tekstowe.";
+    }
+
+    async function loadDiary() {
+        const password = document.getElementById('password').value;
+        const base64 = localStorage.getItem('encrypted_diary');
+        if (!password || !base64) return alert("Brak hasła lub zapisanych danych!");
+
+        try {
+            const combined = new Uint8Array(atob(base64).split("").map(c => c.charCodeAt(0)));
+            const salt = combined.slice(0, 16);
+            const iv = combined.slice(16, 28);
+            const data = combined.slice(28);
+
+            const key = await deriveKey(password, salt);
+            const decrypted = await crypto.subtle.decrypt({ name: ALGO, iv: iv }, key, data);
+
+            document.getElementById('diaryText').value = new TextDecoder().decode(decrypted);
+            document.getElementById('status').innerText = "Odszyfrowano pomyślnie.";
+        } catch (e) {
+            alert("Błędne hasło lub uszkodzone dane!");
         }
+    }
+</script>
 
-        // 3. RENDEROWANIE (Aktualizacja widoku HTML)
-        function renderEvents() {
-            const list = document.getElementById('events-list');
-            list.innerHTML = ''; // Wyczyszczenie obecnej listy
-
-            // Aktualizacja licznika
-            document.getElementById('event-count').innerText = appState.events.length;
-
-            if (appState.events.length === 0) {
-                list.innerHTML = '<li class="p-6 text-center text-gray-500">Brak nadchodzących wydarzeń.</li>';
-                return;
-            }
-
-            // Sortowanie po dacie rosnąco
-            const sortedEvents = [...appState.events].sort((a, b) => new Date(a.date) - new Date(b.date));
-
-            sortedEvents.forEach(ev => {
-                const dateObj = new Date(ev.date);
-                const month = dateObj.toLocaleString('pl-PL', { month: 'short' }).toUpperCase();
-                const day = dateObj.getDate();
-                
-                // Dobór koloru na podstawie kategorii
-                let colorClass = ev.category === 'Zdrowie' ? 'indigo' : (ev.category === 'Rodzina' ? 'red' : 'gray');
-
-                const li = document.createElement('li');
-                li.className = 'p-6 flex items-center justify-between hover:bg-gray-50 transition';
-                li.innerHTML = `
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0 h-12 w-12 bg-${colorClass}-50 rounded-lg flex flex-col justify-center items-center border border-${colorClass}-100">
-                            <span class="text-xs text-${colorClass}-600 font-semibold uppercase">${month}</span>
-                            <span class="text-lg text-${colorClass}-700 font-bold">${day}</span>
-                        </div>
-                        <div class="ml-4">
-                            <h4 class="text-md font-medium text-gray-900">${ev.title}</h4>
-                            <p class="text-sm text-gray-500">Kategoria: ${ev.category}</p>
-                        </div>
-                    </div>
-                    <button onclick="deleteEvent(${ev.id})" class="text-red-400 hover:text-red-600" title="Usuń">
-                        <i class="fa-solid fa-trash"></i>
-                    </button>
-                `;
-                list.appendChild(li);
-            });
-        }
-
-        function renderFamily() {
-            const list = document.getElementById('family-list');
-            list.innerHTML = '';
-
-            appState.family.forEach(member => {
-                const div = document.createElement('div');
-                div.className = 'flex items-center justify-between border-b border-gray-100 pb-3 last:border-0 last:pb-0';
-                div.innerHTML = `
-                    <div class="flex items-center">
-                        <div class="h-8 w-8 rounded-full bg-blue-100 flex justify-center items-center text-blue-700 font-bold text-sm">${member.initial}</div>
-                        <span class="ml-3 text-sm font-medium text-gray-900">${member.name}</span>
-                    </div>
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-${member.color}-100 text-${member.color}-800">
-                        ${member.status}
-                    </span>
-                `;
-                list.appendChild(div);
-            });
-        }
-
-        // 4. OBSŁUGA ZDARZEŃ (Interakcje)
-        function changeMood() {
-            appState.currentMoodIndex = (appState.currentMoodIndex + 1) % appState.moods.length;
-            const mood = appState.moods[appState.currentMoodIndex];
-            
-            document.getElementById('mood-text').innerText = mood.text;
-            
-            const icon = document.getElementById('mood-icon');
-            icon.className = `fa-solid ${mood.icon} text-${mood.color}-600`;
-            
-            const bg = document.getElementById('mood-icon-bg');
-            bg.className = `p-2 bg-${mood.color}-100 rounded-lg`;
-        }
-
-        function openModal(modalId) {
-            document.getElementById(modalId).classList.remove('hidden');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
-            // Reset formularza
-            if(modalId === 'eventModal') {
-                document.getElementById('addEventForm').reset();
-                document.getElementById('eventDate').valueAsDate = new Date();
-            }
-        }
-
-        function handleEventSubmit(e) {
-            e.preventDefault(); // Zatrzymuje przeładowanie strony
-
-            const title = document.getElementById('eventTitle').value;
-            const date = document.getElementById('eventDate').value;
-            const category = document.getElementById('eventCategory').value;
-
-            // Dodanie do "bazy danych"
-            const newEvent = {
-                id: Date.now(), // Prosty sposób na unikalne ID
-                title: title,
-                date: date,
-                category: category
-            };
-
-            appState.events.push(newEvent);
-            
-            // Aktualizacja widoku i zamknięcie okna
-            renderEvents();
-            closeModal('eventModal');
-        }
-
-        function deleteEvent(id) {
-            if(confirm('Czy na pewno chcesz usunąć to wydarzenie?')) {
-                appState.events = appState.events.filter(ev => ev.id !== id);
-                renderEvents();
-            }
-        }
-    </script>
 </body>
 </html>
