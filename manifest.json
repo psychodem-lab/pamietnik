@@ -1,6 +1,6 @@
 {
-  "name": "Life & Health Tracker",
-  "short_name": "Tracker",
+  "name": "Pamiętnik",
+  "short_name": "nocnik",
   "description": "Zaszyfrowany system zarządzania życiem i zdrowiem",
   "start_url": "index.html",
   "display": "standalone",
