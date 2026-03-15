@@ -1,6 +1,6 @@
 {
   "name": "Pamiętnik",
-  "short_name": "nocnik",
+  "short_name": "Pamiętnik",
   "description": "Zaszyfrowany system zarządzania życiem i zdrowiem",
   "start_url": "index.html",
   "display": "standalone",
@@ -8,8 +8,8 @@
   "theme_color": "#3b82f6",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/1041/1041916.png",
-      "sizes": "512x512",
+      "src": "./icons8-diary-carbon_copy-96.png",
+      "sizes": "96x96",
       "type": "image/png"
     }
   ]
