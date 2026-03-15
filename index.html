@@ -609,32 +609,44 @@ body.dark-mode {
     }
 
     function saveData() {
-        const modeKey = currentMode === 'event' ? 'events' : currentMode;
-        const schema = SCHEMAS[currentMode];
-        let item = currentEditId ? db[modeKey].find(x => x.id === currentEditId) : { id: crypto.randomUUID().substring(0, 8), created_date: new Date().toISOString() };
-        
-        schema.forEach(f => {
-            const input = document.getElementById(`val_${f.key}`);
-            if (f.type === 'array') {
-                item[f.key] = input.value.split(',').map(s => s.trim()).filter(s => s !== '');
-            } else if (f.type === 'number') {
-                item[f.key] = input.value ? parseFloat(input.value) : null;
-             } else {
-                item[f.key] = input.value;
-            }
-        });
-        
-        if (modeKey === 'events') {
-        // Wydarzenia: od najstarszej daty do najpóźniejszej (chronologicznie)
+    const modeKey = currentMode === 'event' ? 'events' : currentMode;
+    const schema = SCHEMAS[currentMode];
+    
+    // 1. Pobieramy istniejący obiekt lub tworzymy nowy
+    let item = currentEditId 
+        ? db[modeKey].find(x => x.id === currentEditId) 
+        : { id: crypto.randomUUID().substring(0, 8), created_date: new Date().toISOString() };
+    
+    // 2. Mapujemy wartości z formularza do obiektu
+    schema.forEach(f => {
+        const input = document.getElementById(`val_${f.key}`);
+        if (f.type === 'array') {
+            item[f.key] = input.value.split(',').map(s => s.trim()).filter(s => s !== '');
+        } else if (f.type === 'number') {
+            item[f.key] = input.value ? parseFloat(input.value) : null;
+        } else {
+            item[f.key] = input.value;
+        }
+    });
+    
+    // 3. Jeśli to nowy wpis, dodajemy go do bazy (używamy push zamiast unshift)
+    if (!currentEditId) {
+        db[modeKey].push(item);
+    }
+
+    // 4. KLUCZOWA ZMIANA: Sortowanie po każdej operacji zapisu
+    if (modeKey === 'events') {
+        // Dla Wydarzeń: Od najstarszej daty do najnowszej (chronologicznie w dół)
         db.events.sort((a, b) => new Date(a.date) - new Date(b.date));
-      } else {
-        // Zdrowie i Pamiętnik: od najnowszych na górze
+    } else {
+        // Dla Zdrowia i Pamiętnika: Najnowsze na górze (odwrócona chronologia)
         db[modeKey].sort((a, b) => new Date(b.date) - new Date(a.date));
-      }
+    }
     
     closeModal();
-    renderAll();
-     }
+    renderAll(); // Odświeżamy widok z nowym sortowaniem
+}
+
 
     function switchTab(t) {
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
