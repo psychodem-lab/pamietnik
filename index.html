@@ -596,10 +596,17 @@
             }
         });
         
-        if (!currentEditId) db[modeKey].unshift(item);
-        closeModal();
-        renderAll();
-    }
+        if (modeKey === 'events') {
+        // Wydarzenia: od najstarszej daty do najpóźniejszej (chronologicznie)
+        db.events.sort((a, b) => new Date(a.date) - new Date(b.date));
+      } else {
+        // Zdrowie i Pamiętnik: od najnowszych na górze
+        db[modeKey].sort((a, b) => new Date(b.date) - new Date(a.date));
+      }
+    
+    closeModal();
+    renderAll();
+     }
 
     function switchTab(t) {
         document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
