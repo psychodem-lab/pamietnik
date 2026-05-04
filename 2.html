@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="https://img.icons8.com/dotty/80/journal.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pamiętnik & Zdrowie</title>
+    <!-- Biblioteka do wykresów -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { 
+            --p-color: #1e293b;
+            --s-color: #3b82f6; 
+            --bg: #f1f5f9; 
+            --accent: #10b981; 
+            --journal-color: #8b5cf6; 
+            --danger: #ef4444;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+        }
+        
+        body.dark-mode {
+            --p-color: #f1f5f9;
+            --s-color: #60a5fa;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --border: #334155;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg); 
+            color: var(--p-color); 
+            margin: 0; padding: 10px; line-height: 1.5;
+            transition: background 0.3s;
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; }
+        
+        .header { 
+            text-align: center; margin-bottom: 20px; padding: 15px;
+            background: var(--surface); border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .toolbar, .search-panel { 
+            display: flex; flex-direction: column; gap: 15px; 
+            margin-bottom: 20px; padding: 20px; 
+            background: var(--surface); border-radius: 16px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .search-panel { border-left: 4px solid var(--accent); }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .tabs { 
+            display: flex; gap: 8px; margin-bottom: 20px; 
+            background: var(--surface); padding: 8px; border-radius: 12px; 
+            overflow-x: auto;
+        }
+        
+        .tab { 
+            flex: 1; padding: 12px; cursor: pointer; border: none; 
+            background: transparent; font-weight: 600; border-radius: 8px; 
+            transition: 0.2s; color: #64748b; text-align: center;
+        }
+        .tab.active { background: var(--bg); color: var(--s-color); }
+        
+        .content-section { display: none; }
+        .content-section.active { display: block; animation: fadeIn 0.3s ease; }
+
+        .card-list { display: flex; flex-direction: column; gap: 15px; }
+
+        .card {
+            background: var(--surface); border-radius: 12px; padding: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid var(--border);
+        }
+
+        .chart-container {
+            background: var(--surface); border-radius: 16px; padding: 15px;
+            margin-bottom: 20px; border: 1px solid var(--border);
+            height: 300px; position: relative;
+        }
+
+        .btn { 
+            padding: 12px 20px; border: none; border-radius: 8px; 
+            cursor: pointer; font-size: 0.95rem; font-weight: 600; 
+            display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn-primary { background: var(--s-color); color: white; }
+        .btn-success { background: var(--accent); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-block { width: 100%; justify-content: center; margin-bottom: 15px; }
+
+        .modal { 
+            display: none; position: fixed; z-index: 1000; inset: 0; 
+            background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); padding: 10px;
+        }
+        .modal-content { 
+            background: var(--surface); margin: auto; padding: 20px; 
+            width: 100%; max-width: 600px; border-radius: 16px; 
+            position: relative; top: 50%; transform: translateY(-50%);
+        }
+
+        input, select, textarea { 
+            width: 100%; padding: 12px; border: 1px solid var(--border); 
+            border-radius: 8px; background: var(--bg); color: var(--p-color);
+        }
+
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+        .tag { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; margin: 2px; display: inline-block; }
+
+        .dark-mode-toggle {
+            position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px;
+            border-radius: 50%; background: var(--s-color); color: white;
+            border: none; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            z-index: 1001; font-size: 1.5rem; display: flex; align-items: center; justify-content: center;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @media (min-width: 768px) {
+            .card-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); }
+            .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+            .full-w { grid-column: span 2; }
+        }
+    </style>
+</head>
+<body>
+
+<button class="dark-mode-toggle" onclick="toggleDarkMode()">🌓</button>
+
+<div class="container">
+    <div class="header">
+        <h1>🔐 Pamiętnik & Zdrowie</h1>
+    </div>
+
+    <div class="toolbar">
+        <div class="form-row">
+            <div>
+                <label>Baza Danych</label>
+                <button class="btn btn-primary btn-block" onclick="openLocalFile()">📂 Otwórz plik</button>
+                <input type="file" id="fileInputFallback" style="display: none;">
+            </div>
+            <div>
+                <label>Hasło BIN</label>
+                <input type="password" id="masterPassword" placeholder="Hasło szyfrowania">
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-primary" onclick="saveLocalFile(false)" style="flex:1">💾 JSON</button>
+            <button class="btn btn-success" onclick="saveLocalFile(true)" style="flex:1">🔒 BIN</button>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('events')">Wydarzenia</button>
+        <button class="tab" onclick="switchTab('health')">Zdrowie</button>
+        <button class="tab" onclick="switchTab('journal')">Pamiętnik</button>
+    </div>
+
+    <!-- Sekcja Wydarzenia -->
+    <div id="events-sec" class="content-section active">
+        <button class="btn btn-primary btn-block" onclick="openModal('event')">+ Dodaj Wydarzenie</button>
+        <div id="eventsTable" class="card-list"></div>
+    </div>
+
+    <!-- Sekcja Zdrowie -->
+    <div id="health-sec" class="content-section">
+        <div class="search-panel">
+            <h3 style="margin-top:0">🔍 Filtrowanie i Wykres</h3>
+            <div class="form-row">
+                <input type="text" id="searchPerson" placeholder="Szukaj osoby..." oninput="filterHealth()">
+                <input type="date" id="searchDateFrom" onchange="filterHealth()">
+                <input type="date" id="searchDateTo" onchange="filterHealth()">
+                <select id="sortHealth" onchange="filterHealth()">
+                    <option value="desc">Data: Najnowsze</option>
+                    <option value="asc">Data: Najstarsze</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="weightChart"></canvas>
+        </div>
+
+        <button class="btn btn-success btn-block" onclick="openModal('health')">+ Nowy Wpis Medyczny</button>
+        <div id="healthTable" class="card-list"></div>
+    </div>
+
+    <!-- Sekcja Pamiętnik -->
+    <div id="journal-sec" class="content-section">
+        <button class="btn btn-primary btn-block" onclick="openModal('journal')" style="background: var(--journal-color)">+ Nowy Wpis</button>
+        <div id="journalTable" class="card-list"></div>
+    </div>
+</div>
+
+<div id="modal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Edytuj</h2>
+        <div id="modalFields" class="form-grid"></div>
+        <div style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="btn btn-danger" style="flex: 1;" onclick="closeModal()">Anuluj</button>
+            <button class="btn btn-success" style="flex: 2;" onclick="saveData()">Zapisz</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const SCHEMAS = {
+        event: [
+            { key: 'title', label: 'Tytuł', type: 'text', full: true },
+            { key: 'date', label: 'Data', type: 'datetime-local' },
+            { key: 'category', label: 'Kategoria', type: 'text' },
+            { key: 'priority', label: 'Priorytet', type: 'select', options: ['niska', 'średnia', 'wysoka'] },
+            { key: 'description', label: 'Opis', type: 'textarea', full: true }
+        ],
+        health: [
+            { key: 'family_member_id', label: 'Osoba', type: 'text' },
+            { key: 'date', label: 'Data', type: 'datetime-local' },
+            { key: 'weight', label: 'Waga (kg)', type: 'number', step: '0.1' },
+            { key: 'temperature', label: 'Temp (°C)', type: 'number', step: '0.1' },
+            { key: 'heart_rate', label: 'Tętno', type: 'number' },
+            { key: 'blood_pressure_systolic', label: 'Skurczowe', type: 'number' },
+            { key: 'blood_pressure_diastolic', label: 'Rozkurczowe', type: 'number' },
+            { key: 'notes', label: 'Notatki', type: 'textarea', full: true }
+        ],
+        journal: [
+            { key: 'title', label: 'Tytuł', type: 'text', full: true },
+            { key: 'date', label: 'Data', type: 'date' },
+            { key: 'mood', label: 'Nastrój', type: 'select', options: ['dobry', 'neutralny', 'smutny'] },
+            { key: 'content', label: 'Treść', type: 'textarea', full: true }
+        ]
+    };
+
+    let db = { events: [], health: [], journal: [] };
+    let currentMode = '';
+    let currentEditId = null;
+    let weightChart = null;
+
+    // --- LOGIKA WYKRESU ---
+    function updateChart(data) {
+        const ctx = document.getElementById('weightChart').getContext('2d');
+        
+        // Sortujemy dane do wykresu chronologicznie (zawsze asc)
+        const sortedData = [...data].sort((a, b) => new Date(a.date) - new Date(b.date))
+                                  .filter(item => item.weight); // Tylko wpisy z wagą
+
+        const labels = sortedData.map(item => new Date(item.date).toLocaleDateString());
+        const weights = sortedData.map(item => item.weight);
+
+        if (weightChart) weightChart.destroy();
+
+        weightChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Waga (kg)',
+                    data: weights,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    borderWidth: 3,
+                    tension: 0.3,
+                    fill: true,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#3b82f6'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Trend Wagi', color: '#64748b' }
+                },
+                scales: {
+                    y: { beginAtZero: false, grid: { color: 'rgba(200,200,200,0.1)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // --- FILTROWANIE I SORTOWANIE ---
+    function filterHealth() {
+        const person = document.getElementById('searchPerson').value.toLowerCase();
+        const dateFrom = document.getElementById('searchDateFrom').value;
+        const dateTo = document.getElementById('searchDateTo').value;
+        const sortOrder = document.getElementById('sortHealth').value;
+
+        let filtered = db.health.filter(item => {
+            const matchPerson = (item.family_member_id || 'Ja').toLowerCase().includes(person);
+            const itemDate = item.date.split('T')[0];
+            const matchFrom = dateFrom ? itemDate >= dateFrom : true;
+            const matchTo = dateTo ? itemDate <= dateTo : true;
+            return matchPerson && matchFrom && matchTo;
+        });
+
+        // Sortowanie
+        filtered.sort((a, b) => {
+            return sortOrder === 'asc' 
+                ? new Date(a.date) - new Date(b.date)
+                : new Date(b.date) - new Date(a.date);
+        });
+
+        renderHealthList(filtered);
+        updateChart(filtered);
+    }
+
+    function renderHealthList(data) {
+        let h = '';
+        data.forEach(item => {
+            h += `
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                    <strong>👤 ${item.family_member_id || 'Ja'}</strong>
+                    <small>${new Date(item.date).toLocaleString()}</small>
+                </div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; font-size:0.9rem;">
+                    <span>⚖️ Waga: <b>${item.weight || '--'} kg</b></span>
+                    <span>🌡️ Temp: ${item.temperature || '--'}°C</span>
+                    <span>💓 Tętno: ${item.heart_rate || '--'}</span>
+                    <span>🩸 Ciśn: ${item.blood_pressure_systolic || '--'}/${item.blood_pressure_diastolic || '--'}</span>
+                </div>
+                <div class="card-actions" style="margin-top:15px; display:flex; gap:5px;">
+                    <button class="btn btn-primary" style="padding:5px 10px; font-size:0.8rem" onclick="openModal('health','${item.id}')">Edytuj</button>
+                    <button class="btn btn-danger" style="padding:5px 10px; font-size:0.8rem" onclick="deleteItem('health','${item.id}')">Usuń</button>
+                </div>
+            </div>`;
+        });
+        document.getElementById('healthTable').innerHTML = h || '<p style="text-align:center">Brak wyników</p>';
+    }
+
+    // --- FUNKCJE BAZY (ZACHOWANE I ZMODYFIKOWANE) ---
+    function renderAll() {
+        renderEvents();
+        filterHealth(); // Używa filtra do renderowania zdrowia
+        renderJournal();
+    }
+
+    function renderEvents() {
+        let h = '';
+        db.events.sort((a,b) => new Date(a.date) - new Date(b.date)).forEach(item => {
+            h += `<div class="card">
+                <div class="badge" style="background:#e2e8f0; margin-bottom:5px">${item.priority}</div>
+                <h3 style="margin:0">${item.title}</h3>
+                <small>📅 ${item.date?.replace('T', ' ')}</small>
+                <p>${item.description || ''}</p>
+                <button class="btn btn-primary" onclick="openModal('event','${item.id}')">Edytuj</button>
+            </div>`;
+        });
+        document.getElementById('eventsTable').innerHTML = h;
+    }
+
+    function renderJournal() {
+        let h = '';
+        db.journal.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(item => {
+            h += `<div class="card">
+                <h3>${item.title}</h3>
+                <small>📅 ${item.date} | Nastrój: ${item.mood}</small>
+                <p>${item.content}</p>
+                <button class="btn btn-primary" onclick="openModal('journal','${item.id}')">Edytuj</button>
+            </div>`;
+        });
+        document.getElementById('journalTable').innerHTML = h;
+    }
+
+    function openModal(mode, id = null) {
+        currentMode = mode;
+        currentEditId = id;
+        const schema = SCHEMAS[mode];
+        const data = id ? db[mode === 'event' ? 'events' : mode].find(x => x.id === id) : {};
+        
+        let html = '';
+        schema.forEach(f => {
+            let val = data[f.key] || '';
+            html += `<div class="${f.full ? 'full-w' : ''}"><label>${f.label}</label>`;
+            if(f.type === 'textarea') html += `<textarea id="val_${f.key}">${val}</textarea>`;
+            else if(f.type === 'select') html += `<select id="val_${f.key}">${f.options.map(o => `<option value="${o}" ${o===val?'selected':''}>${o}</option>`).join('')}</select>`;
+            else html += `<input type="${f.type}" id="val_${f.key}" value="${val}" step="${f.step||1}">`;
+            html += `</div>`;
+        });
+        document.getElementById('modalFields').innerHTML = html;
+        document.getElementById('modal').style.display = 'block';
+    }
+
+    function saveData() {
+        const modeKey = currentMode === 'event' ? 'events' : currentMode;
+        let item = currentEditId ? db[modeKey].find(x => x.id === currentEditId) : { id: crypto.randomUUID().substring(0,8) };
+        
+        SCHEMAS[currentMode].forEach(f => {
+            const val = document.getElementById(`val_${f.key}`).value;
+            item[f.key] = f.type === 'number' ? parseFloat(val) : val;
+        });
+
+        if (!currentEditId) db[modeKey].push(item);
+        closeModal();
+        renderAll();
+    }
+
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
+    
+    function switchTab(t) {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        document.getElementById(t + '-sec').classList.add('active');
+        event.target.classList.add('active');
+        if(t === 'health') setTimeout(() => filterHealth(), 100);
+    }
+
+    function deleteItem(key, id) {
+        if(confirm("Usunąć?")) { db[key] = db[key].filter(x => x.id !== id); renderAll(); }
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    // --- OBSŁUGA PLIKÓW (ZACHOWANA) ---
+    async function openLocalFile() {
+        if ('showOpenFilePicker' in window) {
+            try {
+                const [handle] = await window.showOpenFilePicker();
+                const file = await handle.getFile();
+                processFile(file);
+            } catch (e) {}
+        } else document.getElementById('fileInputFallback').click();
+    }
+
+    async function processFile(file) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                if (file.name.endsWith('.bin')) {
+                    const pass = document.getElementById('masterPassword').value;
+                    const decrypted = await decryptData(e.target.result, pass);
+                    db = JSON.parse(decrypted);
+                } else db = JSON.parse(e.target.result);
+                renderAll();
+            } catch (err) { alert("Błąd: " + err.message); }
+        };
+        if (file.name.endsWith('.bin')) reader.readAsArrayBuffer(file);
+        else reader.readAsText(file);
+    }
+
+    async function saveLocalFile(encrypt) {
+        const dataStr = JSON.stringify(db);
+        let blob;
+        if (!encrypt) blob = new Blob([dataStr], {type:'application/json'});
+        else {
+            const pass = document.getElementById('masterPassword').value;
+            if(!pass) return alert("Wpisz hasło!");
+            blob = await encryptData(dataStr, pass);
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = encrypt ? 'baza.bin' : 'baza.json';
+        a.click();
+    }
+
+    // Kryptografia AES-GCM
+    async function deriveKey(pass, salt) {
+        const enc = new TextEncoder();
+        const base = await crypto.subtle.importKey("raw", enc.encode(pass), "PBKDF2", false, ["deriveKey"]);
+        return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+    }
+
+    async function encryptData(str, pass) {
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const key = await deriveKey(pass, salt);
+        const enc = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, new TextEncoder().encode(str));
+        const res = new Uint8Array(16 + 12 + enc.byteLength);
+        res.set(salt, 0); res.set(iv, 16); res.set(new Uint8Array(enc), 28);
+        return new Blob([res]);
+    }
+
+    async function decryptData(buf, pass) {
+        const salt = new Uint8Array(buf.slice(0,16));
+        const iv = new Uint8Array(buf.slice(16,28));
+        const data = buf.slice(28);
+        const key = await deriveKey(pass, salt);
+        const dec = await crypto.subtle.decrypt({name:"AES-GCM", iv}, key, data);
+        return new TextDecoder().decode(dec);
+    }
+
+    if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+</script>
+</body>
+</html>
