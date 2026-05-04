@@ -6,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pamiętnik</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { 
             --p-color: #1e293b;
@@ -271,6 +272,12 @@
             display: inline-block;
         }
 
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
         @media (min-width: 768px) {
             body { padding: 20px;
             }
@@ -288,6 +295,7 @@
             }
             .card-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             }
+            #healthChartCard { grid-column: 1 / -1; }
         }
         /* Style dla trybu nocnego */
         body.dark-mode {
@@ -298,7 +306,6 @@
             --border: #334155;
         }
 
-        /* Styl dla przycisku przełączania */
         .dark-mode-toggle {
             position: fixed;
             bottom: 20px;
@@ -341,7 +348,6 @@
             <button class="btn btn-primary" onclick="saveLocalFile(false)">💾 Zapisz JSON</button>
             <button class="btn btn-success" onclick="saveLocalFile(true)">🔒 Zapisz BIN</button>
         </div>
-  
    </div>
 
     <div class="tabs">
@@ -373,6 +379,20 @@
                     <option value="desc">Najnowsze wpisy</option>
                     <option value="asc">Najstarsze wpisy</option>
                 </select>
+            </div>
+        </div>
+
+        <div id="healthChartCard" class="card" style="margin-bottom: 20px; display: none;">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">📉 Wykres zmiany wagi</h3>
+                    <div class="card-subtitle">Na podstawie odfiltrowanych wpisów</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="weightChart"></canvas>
+                </div>
             </div>
         </div>
 
@@ -433,9 +453,9 @@
     let db = { events: [], health: [], journal: [] };
     let currentMode = '';
     let currentEditId = null;
-    let fileHandle = null; // Przechowuje uchwyt do pliku
+    let fileHandle = null; 
+    let myChartInstance = null; // Zmienna dla instancji wykresu
 
-    // System wczytywania plików oparty o File System Access API
     async function openLocalFile() {
         if ('showOpenFilePicker' in window) {
             try {
@@ -452,7 +472,6 @@
                 if (err.name !== 'AbortError') console.error("Anulowano lub błąd:", err);
             }
         } else {
-            // Zapasowe rozwiązanie dla starszych przeglądarek / iOS
             document.getElementById('fileInputFallback').click();
         }
     }
@@ -485,7 +504,6 @@
         else reader.readAsText(file);
     }
 
-    // System zapisu wykorzystujący nadpisywanie pliku API (lub fallback na pobieranie)
     async function saveLocalFile(encrypt) {
         const dataStr = JSON.stringify(db);
         let finalBlob;
@@ -523,8 +541,6 @@
                 alert("Pomyślnie nadpisano plik na dysku!");
             } catch (e) {
                 if (e.name !== 'AbortError') {
-                    console.error("Błąd zapisu File System API:", e);
-                    // Jeżeli brak uprawnień - fallback do pobrania
                     downloadBlob(finalBlob, `baza${ext}`);
                 }
             }
@@ -564,30 +580,28 @@
         document.getElementById('eventsTable').innerHTML = h || '<div style="text-align:center; padding: 20px; color:#64748b;">Brak wydarzeń.</div>';
     }
 
-    // Zaktualizowana funkcja renderHealth z filtrowaniem i sortowaniem
     function renderHealth() {
         let h = '';
         
-        // Pobieranie kryteriów wyszukiwania i sortowania
         const searchPerson = document.getElementById('searchHealthPerson')?.value.toLowerCase() || '';
         const searchDate = document.getElementById('searchHealthDate')?.value || '';
         const sortOrder = document.getElementById('sortHealthDate')?.value || 'desc';
 
-        // 1. Kopiowanie bazy i filtrowanie
         let filteredHealth = db.health.filter(item => {
             const personMatch = (item.family_member_id || 'Ja').toLowerCase().includes(searchPerson);
             const dateMatch = searchDate === '' || (item.date && item.date.startsWith(searchDate));
             return personMatch && dateMatch;
         });
 
-        // 2. Sortowanie
+        // Kopia danych do rysowania wykresu - ZAWSZE chronologicznie (od najstarszej)
+        let chartData = [...filteredHealth].sort((a, b) => new Date(a.date) - new Date(b.date));
+
         filteredHealth.sort((a, b) => {
             const dateA = new Date(a.date);
             const dateB = new Date(b.date);
             return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
         });
 
-        // 3. Renderowanie
         filteredHealth.forEach(item => {
             const symptoms = (item.physical_symptoms || []).map(s => `<span class="tag">${s}</span>`).join('');
             h += `
@@ -616,6 +630,79 @@
             </div>`;
         });
         document.getElementById('healthTable').innerHTML = h || '<div style="text-align:center; padding: 20px; color:#64748b;">Brak wpisów medycznych spełniających kryteria.</div>';
+        
+        // Wywołanie aktualizacji wykresu
+        updateChart(chartData);
+    }
+
+    function updateChart(data) {
+        // Zostaw tylko te wpisy, które mają podaną wagę
+        const dataWithWeight = data.filter(item => item.weight !== undefined && item.weight !== null && item.weight !== '');
+        const chartCard = document.getElementById('healthChartCard');
+
+        // Jeśli mamy mniej niż 2 punkty pomiarowe z wagą, ukrywamy wykres (nie ma sensu rysować jednej kropki lub pustego)
+        if (dataWithWeight.length < 2) {
+            chartCard.style.display = 'none';
+            return;
+        }
+
+        chartCard.style.display = 'block';
+
+        const labels = dataWithWeight.map(item => {
+            const d = new Date(item.date);
+            return `${d.toLocaleDateString()} ${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
+        });
+        const weights = dataWithWeight.map(item => parseFloat(item.weight));
+
+        const ctx = document.getElementById('weightChart').getContext('2d');
+
+        const isDarkMode = document.body.classList.contains('dark-mode');
+        const textColor = isDarkMode ? '#f1f5f9' : '#1e293b';
+        const gridColor = isDarkMode ? '#334155' : '#e2e8f0';
+
+        if (myChartInstance) {
+            myChartInstance.destroy(); // Zniszcz poprzedni wykres, żeby narysować nowy
+        }
+
+        myChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Waga (kg)',
+                    data: weights,
+                    borderColor: '#10b981', // Zielony akcent
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#3b82f6',
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    tension: 0.3, // Zakrzywienie linii
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: textColor }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: textColor },
+                        grid: { color: gridColor }
+                    },
+                    y: {
+                        ticks: { color: textColor },
+                        grid: { color: gridColor },
+                        // Nie chcemy zaczynać od 0 przy wadze, żeby wykres był czytelny
+                        beginAtZero: false 
+                    }
+                }
+            }
+        });
     }
 
     function renderJournal() {
@@ -754,6 +841,7 @@
     function toggleDarkMode() {
         const isDark = document.body.classList.toggle('dark-mode');
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        renderHealth(); // Przerenderuj zdrowie, aby zaktualizować kolory wykresu
     }
 
     (function() {
